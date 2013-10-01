@@ -13,7 +13,7 @@ except ImportError:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
 
-world_side = 7
+world_size = (7, 7, 7, 7)
 
 class MovementException(Exception): pass
 
@@ -29,8 +29,8 @@ class Object(object):
         new_cells = []
         for cell in self.cells:
             new_cell = tuple(i + j for i, j in zip(cell, movement))
-            for i in new_cell:
-                if i < 0 or i >= world_side:
+            for i, max_i in zip(new_cell, world_size):
+                if i < 0 or i >= max_i:
                     raise MovementException()
                 collision = get_object_at(new_cell, ignore=[self])
                 if collision:
@@ -67,10 +67,10 @@ directions_by_key = {
 }
 while True:
     sys.stdout.write('\n' * 10)
-    for z in reversed(range(world_side)):
-        for y in reversed(range(world_side)):
-            for w in reversed(range(world_side)):
-                for x in range(world_side):
+    for z in reversed(range(world_size[2])):
+        for y in reversed(range(world_size[1])):
+            for w in reversed(range(world_size[3])):
+                for x in range(world_size[0]):
                     o = get_object_at((x, y, z, w))
                     if o:
                         sys.stdout.write(o.char)
