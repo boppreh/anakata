@@ -1,4 +1,17 @@
-import msvcrt
+import sys
+try:
+    from msvcrt import getch
+except ImportError:
+    import tty, termios
+    def getch():
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(sys.stdin.fileno())
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        return ch
 
 world_side = 7
 
@@ -43,7 +56,6 @@ directions_by_key = {
     'M': (1, 0, 0, 0),
     'K': (-1, 0, 0, 0),
 }
-import sys
 while True:
     sys.stdout.write('\n' * 10)
     for z in reversed(range(world_side)):
@@ -62,7 +74,7 @@ while True:
             sys.stdout.write('\n')
         sys.stdout.write('\n\n')
 
-    command = msvcrt.getch()
+    command = getch()
     if command not in directions_by_key:
         continue
 
