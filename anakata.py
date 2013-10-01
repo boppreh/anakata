@@ -82,4 +82,7 @@ while True:
         continue
 
     direction = directions_by_key[command]
-    player.move(direction, obstacles=objects, force=2)
+    try:
+        player.move(direction, obstacles=objects, force=2)
+    except MovementException:
+        continue
