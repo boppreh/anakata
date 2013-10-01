@@ -22,7 +22,10 @@ class Object(object):
         self.cells = cells
         self.char = char
 
-    def move(self, movement, obstacles):
+    def move(self, movement, obstacles=[], force=1):
+        if force == 0:
+            raise MovementException()
+
         new_cells = []
         for cell in self.cells:
             new_cell = tuple(i + j for i, j in zip(cell, movement))
@@ -33,7 +36,7 @@ class Object(object):
                     if o == self:
                         continue
                     if new_cell in o.cells:
-                        raise MovementException()
+                        o.move(movement, obstacles, force - 1)
             new_cells.append(new_cell)
 
         self.cells = new_cells
@@ -79,11 +82,4 @@ while True:
         continue
 
     direction = directions_by_key[command]
-    player.move(direction, [])
-    for o in objects:
-        if o == player:
-            continue
-        for cell in o.cells:
-            if cell == player.cells[0]:
-                o.move(direction, objects)
-
+    player.move(direction, obstacles=objects, force=2)
