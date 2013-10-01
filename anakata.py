@@ -7,11 +7,14 @@ try:
         'H': 'forward', 'P': 'backward',
         'M': 'right', 'K': 'left',
     }
-    wrapper = lambda x: x(None)
+    def display(text):
+        sys.stdout.write('\n\n\n' + text)
 except ImportError:
     import curses
     window = curses.initscr()
     window.keypad(True)
+    curses.noecho()
+    curses.cbreak()
     directions_by_key = {
         'w': 'up', 's': 'down',
         'a': 'ana', 'd': 'kata',
@@ -25,7 +28,13 @@ except ImportError:
             return '^' + chr(window.getch())
         else:
             return chr(code)
-    wrapper = curses.wrapper
+    def display(text):
+        window.addstr(0, 0, text)
+        window.refresh()
+    import atexit
+    atexit.register(lambda: curses.echo()
+            or curses.nocbreak() or
+            curses.endwin())
 
 
 def direction_input():
@@ -35,7 +44,7 @@ def direction_input():
         except KeyError:
             continue
 
-world_size = (7, 7, 7, 7)
+world_size = (5, 5, 5, 5)
 movement_by_direction = {
     'up': (0, 0, 1, 0),
     'down': (0, 0, -1, 0),
@@ -87,28 +96,25 @@ def get_object_at(position, ignore=set()):
             return o
 
 
-def game_loop(screen):
-    while True:
-        output = []
-        for z in reversed(range(world_size[2])):
-            for y in reversed(range(world_size[1])):
-                for w in reversed(range(world_size[3])):
-                    for x in range(world_size[0]):
-                        o = get_object_at((x, y, z, w))
-                        if o:
-                            output.append(o.char)
-                        else:
-                            output.append('.')
-                    output.append(' ')
-                output.append('\n')
-            output.append('\n\n')
-        sys.stdout.write('\n\n\n' + ''.join(output))
+while True:
+    output = []
+    for z in reversed(range(world_size[2])):
+        for y in reversed(range(world_size[1])):
+            for w in reversed(range(world_size[3])):
+                for x in range(world_size[0]):
+                    o = get_object_at((x, y, z, w))
+                    if o:
+                        output.append(o.char)
+                    else:
+                        output.append('.')
+                output.append(' ')
+            output.append('\n')
+        output.append('\n')
+    display(''.join(output))
 
-        direction = direction_input()
-        movement = movement_by_direction[direction]
-        try:
-            player.move(movement, force=2)
-        except MovementException:
-            continue
-
-wrapper(game_loop)
+    direction = direction_input()
+    movement = movement_by_direction[direction]
+    try:
+        player.move(movement, force=2)
+    except MovementException:
+        continue
