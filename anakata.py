@@ -32,11 +32,9 @@ class Object(object):
             for i in new_cell:
                 if i < 0 or i >= world_side:
                     raise MovementException()
-                for o in obstacles:
-                    if o == self:
-                        continue
-                    if new_cell in o.cells:
-                        o.move(movement, obstacles, force - 1)
+                collision = get_object_at(new_cell, ignore=[self])
+                if collision:
+                    collision.move(movement, obstacles, force - 1)
             new_cells.append(new_cell)
 
         self.cells = new_cells
@@ -48,6 +46,14 @@ class Object(object):
 player = Object([(3, 3, 3, 3)], '@')
 point = Object([(3, 4, 3, 3)], '#')
 objects = [player, point]
+
+def get_object_at(position, ignore=set()):
+    for o in objects:
+        if o in ignore:
+            continue
+        if position in o.cells:
+            return o
+
 
 directions_by_key = {
     'w': (0, 0, 1, 0),
@@ -65,14 +71,11 @@ while True:
         for y in reversed(range(world_side)):
             for w in reversed(range(world_side)):
                 for x in range(world_side):
-                    empty = True
-                    for o in objects:
-                        if (x, y, z, w) in o.cells:
-                            empty = False
-                            sys.stdout.write(o.char)
-                    if empty:
+                    o = get_object_at((x, y, z, w))
+                    if o:
+                        sys.stdout.write(o.char)
+                    else:
                         sys.stdout.write('.')
-
                 sys.stdout.write(' ')
             sys.stdout.write('\n')
         sys.stdout.write('\n\n')
