@@ -25,8 +25,6 @@ except ImportError:
             return '^' + chr(window.getch())
         else:
             return chr(code)
-    def clear():
-        window.clear()
     wrapper = curses.wrapper
 
 
@@ -91,7 +89,6 @@ def get_object_at(position, ignore=set()):
 
 def game_loop(screen):
     while True:
-        clear()
         output = []
         for z in reversed(range(world_size[2])):
             for y in reversed(range(world_size[1])):
@@ -105,8 +102,7 @@ def game_loop(screen):
                     output.append(' ')
                 output.append('\n')
             output.append('\n\n')
-        sys.stdout.write(''.join(output))
-        sys.stdout.flush()
+        sys.stdout.write('\n\n\n' + ''.join(output))
 
         direction = direction_input()
         movement = movement_by_direction[direction]
