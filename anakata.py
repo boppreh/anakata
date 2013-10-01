@@ -16,18 +16,12 @@ except ImportError:
     curses.noecho()
     curses.cbreak()
     directions_by_key = {
-        'w': 'up', 's': 'down',
-        'a': 'ana', 'd': 'kata',
-        '^u': 'forward', '^d': 'backward',
-        '^r': 'right', '^l': 'left',
+        ord('w'): 'up', ord('s'): 'down',
+        ord('a'): 'ana', ord('d'): 'kata',
+        259: 'forward', 258: 'backward',
+        261: 'right', 260: 'left',
     }
-    def getch():
-        code = window.getch()
-        if code == 155:
-            window.getch()
-            return '^' + chr(window.getch())
-        else:
-            return chr(code)
+    getch = window.getch
     def display(text):
         window.addstr(0, 0, text)
         window.refresh()
@@ -85,7 +79,7 @@ class Object(object):
 
 
 player = Object([tuple(int(i / 2) for i in world_size)], '@')
-point = Object([(3, 4, 3, 3)], '#')
+point = Object([(2, 3, 2, 2)], '#')
 objects = [player, point]
 
 def get_object_at(position, ignore=set()):
