@@ -43,7 +43,7 @@ class Object(object):
         return self.char + ' ' + ' '.join(map(str, self.cells))
 
 
-player = Object([(3, 3, 3, 3)], '@')
+player = Object([tuple(i / 2 for i in world_size)], '@')
 point = Object([(3, 4, 3, 3)], '#')
 objects = [player, point]
 
