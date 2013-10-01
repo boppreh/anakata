@@ -1,19 +1,50 @@
 import sys
 try:
     from msvcrt import getch
+    directions_by_key = {
+        'w': 'up', 's': 'down',
+        'a': 'ana', 'd': 'kata',
+        'H': 'forward', 'P': 'backward',
+        'M': 'right', 'K': 'left',
+    }
 except ImportError:
-    import tty, termios
+    import curses
+    window = curses.initscr()
+    window.keypad(True)
+    directions_by_key = {
+        'w': 'up', 's': 'down',
+        'a': 'ana', 'd': 'kata',
+        '^u': 'forward', '^d': 'backward',
+        '^r': 'right', '^l': 'left',
+    }
     def getch():
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
+        code = window.getch()
+        if code == 155:
+            window.getch()
+            return '^' + chr(window.getch())
+        else:
+            return chr(code)
+    def clear():
+        window.clear()
+
+def direction_input():
+    while True:
         try:
-            tty.setraw(sys.stdin.fileno())
-            ch = sys.stdin.read(1)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        return ch
+            return directions_by_key[getch()]
+        except KeyError:
+            continue
 
 world_size = (7, 7, 7, 7)
+movement_by_direction = {
+    'up': (0, 0, 1, 0),
+    'down': (0, 0, -1, 0),
+    'ana': (0, 0, 0, 1),
+    'kata': (0, 0, 0, -1),
+    'forward': (0, 1, 0, 0),
+    'backward': (0, -1, 0, 0),
+    'right': (1, 0, 0, 0),
+    'left': (-1, 0, 0, 0),
+}
 
 class MovementException(Exception): pass
 
@@ -43,7 +74,7 @@ class Object(object):
         return self.char + ' ' + ' '.join(map(str, self.cells))
 
 
-player = Object([tuple(i / 2 for i in world_size)], '@')
+player = Object([tuple(int(i / 2) for i in world_size)], '@')
 point = Object([(3, 4, 3, 3)], '#')
 objects = [player, point]
 
@@ -55,18 +86,8 @@ def get_object_at(position, ignore=set()):
             return o
 
 
-directions_by_key = {
-    'w': (0, 0, 1, 0),
-    's': (0, 0, -1, 0),
-    'a': (0, 0, 0, 1),
-    'd': (0, 0, 0, -1),
-    'H': (0, 1, 0, 0),
-    'P': (0, -1, 0, 0),
-    'M': (1, 0, 0, 0),
-    'K': (-1, 0, 0, 0),
-}
 while True:
-    sys.stdout.write('\n' * 10)
+    clear()
     for z in reversed(range(world_size[2])):
         for y in reversed(range(world_size[1])):
             for w in reversed(range(world_size[3])):
@@ -80,12 +101,9 @@ while True:
             sys.stdout.write('\n')
         sys.stdout.write('\n\n')
 
-    command = getch()
-    if command not in directions_by_key:
-        continue
-
-    direction = directions_by_key[command]
+    direction = direction_input()
+    movement = movement_by_direction[direction]
     try:
-        player.move(direction, obstacles=objects, force=2)
+        player.move(movement, obstacles=objects, force=2)
     except MovementException:
         continue
