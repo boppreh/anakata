@@ -7,6 +7,7 @@ try:
         'H': 'forward', 'P': 'backward',
         'M': 'right', 'K': 'left',
     }
+    wrapper = lambda x: x(None)
 except ImportError:
     import curses
     window = curses.initscr()
@@ -26,6 +27,8 @@ except ImportError:
             return chr(code)
     def clear():
         window.clear()
+    wrapper = curses.wrapper
+
 
 def direction_input():
     while True:
@@ -86,24 +89,27 @@ def get_object_at(position, ignore=set()):
             return o
 
 
-while True:
-    clear()
-    for z in reversed(range(world_size[2])):
-        for y in reversed(range(world_size[1])):
-            for w in reversed(range(world_size[3])):
-                for x in range(world_size[0]):
-                    o = get_object_at((x, y, z, w))
-                    if o:
-                        sys.stdout.write(o.char)
-                    else:
-                        sys.stdout.write('.')
-                sys.stdout.write(' ')
-            sys.stdout.write('\n')
-        sys.stdout.write('\n\n')
+def game_loop(screen):
+    while True:
+        clear()
+        for z in reversed(range(world_size[2])):
+            for y in reversed(range(world_size[1])):
+                for w in reversed(range(world_size[3])):
+                    for x in range(world_size[0]):
+                        o = get_object_at((x, y, z, w))
+                        if o:
+                            sys.stdout.write(o.char)
+                        else:
+                            sys.stdout.write('.')
+                    sys.stdout.write(' ')
+                sys.stdout.write('\n')
+            sys.stdout.write('\n\n')
 
-    direction = direction_input()
-    movement = movement_by_direction[direction]
-    try:
-        player.move(movement, obstacles=objects, force=2)
-    except MovementException:
-        continue
+        direction = direction_input()
+        movement = movement_by_direction[direction]
+        try:
+            player.move(movement, obstacles=objects, force=2)
+        except MovementException:
+            continue
+
+wrapper(game_loop)
