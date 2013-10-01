@@ -92,18 +92,21 @@ def get_object_at(position, ignore=set()):
 def game_loop(screen):
     while True:
         clear()
+        output = []
         for z in reversed(range(world_size[2])):
             for y in reversed(range(world_size[1])):
                 for w in reversed(range(world_size[3])):
                     for x in range(world_size[0]):
                         o = get_object_at((x, y, z, w))
                         if o:
-                            sys.stdout.write(o.char)
+                            output.append(o.char)
                         else:
-                            sys.stdout.write('.')
-                    sys.stdout.write(' ')
-                sys.stdout.write('\n')
-            sys.stdout.write('\n\n')
+                            output.append('.')
+                    output.append(' ')
+                output.append('\n')
+            output.append('\n\n')
+        sys.stdout.write(''.join(output))
+        sys.stdout.flush()
 
         direction = direction_input()
         movement = movement_by_direction[direction]
