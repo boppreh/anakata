@@ -9,13 +9,18 @@ class Object(object):
         self.cells = cells
         self.char = char
 
-    def move(self, movement):
+    def move(self, movement, objects):
         new_cells = []
         for cell in self.cells:
             new_cell = tuple(i + j for i, j in zip(cell, movement))
             for i in new_cell:
                 if i < 0 or i >= world_side:
                     raise MovementException()
+                for o in objects:
+                    if o == self:
+                        continue
+                    if new_cell in o.cells:
+                        raise MovementException()
             new_cells.append(new_cell)
 
         self.cells = new_cells
@@ -25,7 +30,8 @@ class Object(object):
 
 
 player = Object([(3, 3, 3, 3)], '@')
-objects = [player]
+point = Object([(3, 4, 3, 3)], '#')
+objects = [player, point]
 
 directions_by_key = {
     'w': (0, 0, 1, 0),
@@ -61,5 +67,5 @@ while True:
         continue
 
     direction = directions_by_key[command]
-    player.move(direction)
+    player.move(direction, objects)
 
