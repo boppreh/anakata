@@ -1,9 +1,8 @@
 import msvcrt
 
-max_x = 7
-max_y = 7
-max_z = 7
-max_w = 7
+world_side = 7
+
+class MovementException(Exception): pass
 
 class Cell(object):
     def __init__(self, pos, char):
@@ -11,7 +10,12 @@ class Cell(object):
         self.char = char
 
     def move(self, delta_pos):
-        self.pos = tuple(i + j for i, j in zip(self.pos, delta_pos))
+        new_pos = tuple(i + j for i, j in zip(self.pos, delta_pos))
+        for i in new_pos:
+            if i < 0 or i >= world_side:
+                raise MovementException()
+
+        self.pos = new_pos
 
     def __str__(self):
         return self.char
