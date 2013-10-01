@@ -56,7 +56,7 @@ class Object(object):
         self.cells = cells
         self.char = char
 
-    def move(self, movement, obstacles=[], force=1):
+    def move(self, movement, force=1):
         if force == 0:
             raise MovementException()
 
@@ -68,7 +68,7 @@ class Object(object):
                     raise MovementException()
                 collision = get_object_at(new_cell, ignore=[self])
                 if collision:
-                    collision.move(movement, obstacles, force - 1)
+                    collision.move(movement, force - 1)
             new_cells.append(new_cell)
 
         self.cells = new_cells
@@ -111,7 +111,7 @@ def game_loop(screen):
         direction = direction_input()
         movement = movement_by_direction[direction]
         try:
-            player.move(movement, obstacles=objects, force=2)
+            player.move(movement, force=2)
         except MovementException:
             continue
 
