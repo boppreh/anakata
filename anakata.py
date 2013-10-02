@@ -192,10 +192,14 @@ class Level(object):
 
     def game_loop(self):
         """
-        Loops reading input from the user and moving the player character.
+        Loops reading input from the user and moving the player character until
+        the player wins.
         """
         while True:
             display(''.join(self.draw_world()))
+
+            if self.target in self.item.cells:
+                return
 
             direction = direction_input()
             movement = movement_by_direction[direction]
@@ -219,3 +223,5 @@ if __name__ == '__main__':
 ... ... ...
 ... ... ...
 """).game_loop()
+
+    print("Congratulations!")
