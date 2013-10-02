@@ -98,9 +98,10 @@ class Object(object):
             for i, max_i in zip(new_cell, world_size):
                 if i < 0 or i >= max_i:
                     raise MovementException()
-                collision = get_object_at(new_cell, ignore=[self])
-                if collision:
-                    collision.move(movement, force - 1)
+
+            collision = get_object_at(new_cell, ignore=[self])
+            if collision:
+                collision.move(movement, force - 1)
 
             new_cells.append(new_cell)
 
