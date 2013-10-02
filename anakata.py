@@ -142,6 +142,20 @@ class World(object):
         # Order and direction of axis chosen for intuitive controls.
         # Current setup mimics a grid of grids: the outer rows and columns are the
         # z and w dimensions, the inner ones are y and x (respectively).
+
+        # Example 3x3x3x3
+        # ... ... ...
+        # ... ... ...  
+        # ... ... ... z
+        #             +
+        # ...y... ... |
+        # ...+... ... |
+        # ...|... ... |
+        #     -+x
+        # ... ... ...
+        # ... ... ...
+        # ... ... ...
+        # ----------+ w
         for z in reversed(range(self.size[2])):
             for y in reversed(range(self.size[1])):
                 for w in reversed(range(self.size[3])):
