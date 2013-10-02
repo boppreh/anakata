@@ -227,7 +227,11 @@ if __name__ == '__main__':
         text = open('levels/' + level_name).read()
         Level.load(text).run()
         print('Level finished!')
+        print('')
+        print('')
 
+    print('===================')
+    print('  Game completed')
     print('')
-    print('Game completed.')
-    print('You are a winner!')
+    print(' You are a winner!')
+    print('===================')
