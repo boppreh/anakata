@@ -190,7 +190,7 @@ class Level(object):
             yield '\n'
 
 
-    def game_loop(self):
+    def run(self):
         """
         Loops reading input from the user and moving the player character until
         the player wins.
@@ -210,18 +210,15 @@ class Level(object):
                 continue
 
 if __name__ == '__main__':
-    Level.load("""
-... ... ...
-... ... ...
-... ... ...
+    for level_name in sorted(os.listdir('levels')):
+        print('Level: ' + os.path.splitext(level_name)[0])
+        print('Press any key to continue.')
+        direction_input()
 
-... .X. ...
-... .#. ...
-... .@. ...
+        text = open('levels/' + level_name).read()
+        Level.load(text).run()
+        print('Level finished!')
 
-... ... ...
-... ... ...
-... ... ...
-""").game_loop()
-
-    print("Congratulations!")
+    print('')
+    print('Game completed.')
+    print('You are a winner!')
