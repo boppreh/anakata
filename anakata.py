@@ -132,21 +132,27 @@ class Level(object):
                         if cell > max_cell:
                             max_cell = cell
 
-        objects = [Object(cells, char, None)
-                   for char, cells in cells_by_char.items()]
-        size = tuple(i + 1 for i in max_cell)
-        return Level(objects, size)
+        target = cells_by_char['X'][0]
+        del cells_by_char['X']
 
-    def __init__(self, objects, size):
-        self.size = size
+        objects_by_char = {char: Object(cells, char, None)
+                           for char, cells in cells_by_char.items()}
+
+        player = objects_by_char['@']
+        item = objects_by_char['#']
+        objects = [o for char, o in objects_by_char.items()]
+        size = tuple(i + 1 for i in max_cell)
+        return Level(player, item, target, objects, size)
+
+    def __init__(self, player, item, target, objects, size):
+        self.player = player
+        self.item = item
+        self.target = target
         self.objects = objects
+        self.size = size
 
         for o in objects:
             o.world = self
-            if o.char == '@':
-                self.player = o
-
-        assert self.player
 
     def get_object_at(self, position, ignore=set()):
         """
@@ -171,9 +177,12 @@ class Level(object):
             for y in reversed(range(self.size[1])):
                 for w in reversed(range(self.size[3])):
                     for x in range(self.size[0]):
-                        o = self.get_object_at((x, y, z, w))
+                        cell = (x, y, z, w)
+                        o = self.get_object_at(cell)
                         if o:
                             yield o.char
+                        elif cell == self.target:
+                            yield 'X'
                         else:
                             yield '.'
                     yield ' '
@@ -202,9 +211,9 @@ if __name__ == '__main__':
 ... ... ...
 ... ... ...
 
-... ... ...
+... .X. ...
+... .#. ...
 ... .@. ...
-... ... ...
 
 ... ... ...
 ... ... ...
