@@ -1,4 +1,5 @@
 import sys, os
+from collections import defaultdict
 try:
     from msvcrt import getch
     directions_by_key = {
@@ -112,11 +113,40 @@ class Level(object):
     """
     Class for a single game level.
     """
-    def __init__(self):
-        self.size = (5, 5, 5, 5)
-        self.player = Object([tuple(int(i / 2) for i in self.size)], '@', self)
-        point = Object([(2, 3, 2, 2)], '#', self)
-        self.objects = [self.player, point]
+    @staticmethod
+    def load(level_text):
+        """
+        Creates a new level based on a textual map. Cells with the same symbol
+        are merged into a single object and '@' denotes the player.
+        """
+        cells_by_char = defaultdict(list)
+        max_cell = (0, 0, 0, 0)
+        level_text = level_text.strip()
+        for z, z_contents in enumerate(reversed(level_text.split('\n\n'))):
+            for y, y_contents in enumerate(reversed(z_contents.split('\n'))):
+                for w, w_contents in enumerate(reversed(y_contents.split(' '))):
+                    for x, x_contents in enumerate(w_contents):
+                        cell = (x, y, z, w)
+                        if x_contents != '.':
+                            cells_by_char[x_contents].append(cell)
+                        if cell > max_cell:
+                            max_cell = cell
+
+        objects = [Object(cells, char, None)
+                   for char, cells in cells_by_char.items()]
+        size = tuple(i + 1 for i in max_cell)
+        return Level(objects, size)
+
+    def __init__(self, objects, size):
+        self.size = size
+        self.objects = objects
+
+        for o in objects:
+            o.world = self
+            if o.char == '@':
+                self.player = o
+
+        assert self.player
 
     def get_object_at(self, position, ignore=set()):
         """
@@ -167,4 +197,16 @@ class Level(object):
                 continue
 
 if __name__ == '__main__':
-    Level().game_loop()
+    Level.load("""
+... ... ...
+... ... ...
+... ... ...
+
+... ... ...
+... .@. ...
+... ... ...
+
+... ... ...
+... ... ...
+... ... ...
+""").game_loop()
