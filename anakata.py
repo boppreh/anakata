@@ -43,6 +43,7 @@ except ImportError:
 
     def display(text):
         window.addstr(0, 0, text)
+        window.clrtobot()
         window.refresh()
 
 
@@ -56,7 +57,7 @@ def direction_input():
     """
     while True:
         char = getch()
-        if char == 'q':
+        if char in ('q', 113):
             raise LevelEnd()
         elif char in directions_by_key:
             return directions_by_key[char]
@@ -222,8 +223,8 @@ class Level(Game):
 
         max_z = level_text.count('\n\n') + 1
         max_w = level_text.split('\n')[0].count(' ') + 1
-        max_x = (len(level_text.split('\n')[0]) + 1) / max_w - 1
-        max_y = (level_text.count('\n') + 1) / max_z
+        max_x = int((len(level_text.split('\n')[0]) + 1) / max_w) - 1
+        max_y = int((level_text.count('\n') + 1) / max_z)
         size = (max_x, max_y, max_z, max_w)
 
         # Mimics the World.draw method, but splitting instead of joining.
@@ -299,6 +300,6 @@ class LevelSelection(Game):
 
 if __name__ == '__main__':
     levels = [Level.load('levels/' + level)
-              for level in os.listdir('levels')
+              for level in sorted(os.listdir('levels'))
               if not level.startswith('.')]
     LevelSelection(levels).run()
