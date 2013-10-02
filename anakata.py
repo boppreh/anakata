@@ -75,9 +75,10 @@ class Object(object):
     Physical object represented by a set of cells, connected or not, and a
     single character string.
     """
-    def __init__(self, cells, char):
+    def __init__(self, cells, char, world):
         self.cells = cells
         self.char = char
+        self.world = world
 
     def move(self, movement, force=1):
         """
@@ -99,7 +100,7 @@ class Object(object):
                 if i < 0 or i >= max_i:
                     raise MovementException()
 
-            collision = get_object_at(new_cell, ignore=[self])
+            collision = self.world.get_object_at(new_cell, ignore=[self])
             if collision:
                 collision.move(movement, force - 1)
 
@@ -108,44 +109,52 @@ class Object(object):
         self.cells = new_cells
 
 
-player = Object([tuple(int(i / 2) for i in world_size)], '@')
-point = Object([(2, 3, 2, 2)], '#')
-objects = [player, point]
+class Game(object):
+    def __init__(self):
+        self.player = Object([tuple(int(i / 2) for i in world_size)], '@', self)
+        point = Object([(2, 3, 2, 2)], '#', self)
+        self.objects = [self.player, point]
 
-def get_object_at(position, ignore=set()):
-    """
-    Finds the object with a cell at `position`, unless it is in the `ignore`
-    set. Returns None if no matches are found.
-    """
-    for o in objects:
-        if o in ignore:
-            continue
-        if position in o.cells:
-            return o
+    def get_object_at(self, position, ignore=set()):
+        """
+        Finds the object with a cell at `position`, unless it is in the `ignore`
+        set. Returns None if no matches are found.
+        """
+        for o in self.objects:
+            if o in ignore:
+                continue
+            if position in o.cells:
+                return o
 
-while True:
-    output = []
-    # Order and direction of axis chosen for intuitive controls.
-    # Current setup mimics a grid of grids: the outer rows and columns are the
-    # z and w dimensions, the inner ones are y and x (respectively).
-    for z in reversed(range(world_size[2])):
-        for y in reversed(range(world_size[1])):
-            for w in reversed(range(world_size[3])):
-                for x in range(world_size[0]):
-                    o = get_object_at((x, y, z, w))
-                    if o:
-                        output.append(o.char)
-                    else:
-                        output.append('.')
-                output.append(' ')
-            output.append('\n')
-        output.append('\n')
-    display(''.join(output))
+    def draw_world(self):
+        # Order and direction of axis chosen for intuitive controls.
+        # Current setup mimics a grid of grids: the outer rows and columns are the
+        # z and w dimensions, the inner ones are y and x (respectively).
+        for z in reversed(range(world_size[2])):
+            for y in reversed(range(world_size[1])):
+                for w in reversed(range(world_size[3])):
+                    for x in range(world_size[0]):
+                        o = self.get_object_at((x, y, z, w))
+                        if o:
+                            yield o.char
+                        else:
+                            yield '.'
+                    yield ' '
+                yield '\n'
+            yield '\n'
 
-    direction = direction_input()
-    movement = movement_by_direction[direction]
-    try:
-        # Force = 2. One to move the player, one to push an arbitrary item.
-        player.move(movement, force=2)
-    except MovementException:
-        continue
+
+    def game_loop(self):
+        while True:
+            display(''.join(self.draw_world()))
+
+            direction = direction_input()
+            movement = movement_by_direction[direction]
+            try:
+                # Force = 2. One to move the player, one to push an arbitrary item.
+                self.player.move(movement, force=2)
+            except MovementException:
+                continue
+
+if __name__ == '__main__':
+    Game().game_loop()
