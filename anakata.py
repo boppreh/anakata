@@ -109,7 +109,10 @@ class Object(object):
         self.cells = new_cells
 
 
-class Game(object):
+class Level(object):
+    """
+    Class for a single game level.
+    """
     def __init__(self):
         self.player = Object([tuple(int(i / 2) for i in world_size)], '@', self)
         point = Object([(2, 3, 2, 2)], '#', self)
@@ -127,6 +130,10 @@ class Game(object):
                 return o
 
     def draw_world(self):
+        """
+        Returns a generator that yields the individual chars that make up the
+        world.
+        """
         # Order and direction of axis chosen for intuitive controls.
         # Current setup mimics a grid of grids: the outer rows and columns are the
         # z and w dimensions, the inner ones are y and x (respectively).
@@ -145,6 +152,9 @@ class Game(object):
 
 
     def game_loop(self):
+        """
+        Loops reading input from the user and moving the player character.
+        """
         while True:
             display(''.join(self.draw_world()))
 
@@ -157,4 +167,4 @@ class Game(object):
                 continue
 
 if __name__ == '__main__':
-    Game().game_loop()
+    Level().game_loop()
