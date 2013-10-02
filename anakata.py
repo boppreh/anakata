@@ -47,10 +47,7 @@ except ImportError:
 
 
 class MovementError(Exception): pass
-class LevelEndError(Exception):
-    def __init__(self, success):
-        self.success = success
-        Exception.__init__(self)
+class LevelEnd(Exception): pass
 
 def direction_input():
     """
@@ -60,7 +57,7 @@ def direction_input():
     while True:
         char = getch()
         if char == 'q':
-            raise LevelEndError(False)
+            raise LevelEnd()
         elif char in directions_by_key:
             return directions_by_key[char]
 
@@ -258,7 +255,10 @@ class Level(Game):
             screen = self.name + '\n\n' + self.world.draw({self.target: 'X'})
             display(screen)
             if self.target in self.item.cells:
-                raise LevelEndError(True)
+                print('Level completed!')
+                print('Move to continue.')
+                direction_input()
+                raise LevelEnd()
             self.read_and_process_input()
 
 
@@ -289,11 +289,7 @@ class LevelSelection(Game):
                 level = self.levels[int(level_number) - 1]
                 try:
                     level.run()
-                except LevelEndError as e:
-                    if e.success:
-                        print('Level completed!')
-                        print('Move to continue.')
-                        direction_input()
+                except LevelEnd:
                     continue
 
 
