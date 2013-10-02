@@ -46,16 +46,20 @@ except ImportError:
         window.refresh()
 
 
+class MovementError(Exception): pass
+class LevelEndError(Exception): pass
+
 def direction_input():
     """
     Returns a direction word (e.g. "up", "left", "ana") from user input. Blocks
     until a valid direction is entered.
     """
     while True:
-        try:
-            return directions_by_key[getch()]
-        except KeyError:
-            continue
+        char = getch()
+        if char == 'q':
+            raise LevelEndError
+        elif char in directions_by_key:
+            return directions_by_key[char]
 
 movement_by_direction = {
     'up': (0, 0, 1, 0),
@@ -67,9 +71,6 @@ movement_by_direction = {
     'right': (1, 0, 0, 0),
     'left': (-1, 0, 0, 0),
 }
-
-class MovementException(Exception): pass
-class LevelEndException(Exception): pass
 
 class Object(object):
     """
@@ -89,10 +90,10 @@ class Object(object):
         recursively, with reduced force.
 
         Illegal movements (not enough force or cell out of bounds) raise an
-        exception and no change is made to any of the object's cells.
+        error and no change is made to any of the object's cells.
         """
         if force == 0 or self.is_immovable:
-            raise MovementException()
+            raise MovementError()
 
         new_cells = []
         for cell in self.cells:
@@ -100,7 +101,7 @@ class Object(object):
 
             for i, max_i in zip(new_cell, self.world.size):
                 if i < 0 or i >= max_i:
-                    raise MovementException()
+                    raise MovementError()
 
             collision = self.world.get_object_at(new_cell, ignore=[self])
             if collision:
@@ -175,7 +176,7 @@ class Game(object):
         try:
             # Force = 2. One to move the player, one to push an arbitrary item.
             self.player.move(movement, force=2)
-        except MovementException:
+        except MovementError:
             return
 
     def run(self):
@@ -262,7 +263,10 @@ class LevelSelection(Game):
             if player_cell in level_by_cell:
                 level_number = level_by_cell[self.player.cells[0]]
                 level = self.levels[int(level_number) - 1]
-                level.run()
+                try:
+                    level.run()
+                except LevelEndError:
+                    continue
 
 
 if __name__ == '__main__':
