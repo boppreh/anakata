@@ -110,7 +110,83 @@ class Object(object):
         self.cells = new_cells
 
 
-class Level(object):
+class World(object):
+    """
+    Class containing the objects and dimension for a single world.
+    """
+    def __init__(self, objects, size):
+        self.objects = objects
+        self.size = size
+
+        for o in objects:
+            o.world = self
+
+    def get_object_at(self, position, ignore=set()):
+        """
+        Finds the object with a cell at `position`, unless it is in the `ignore`
+        set. Returns None if no matches are found.
+        """
+        for o in self.objects:
+            if o in ignore:
+                continue
+            if position in o.cells:
+                return o
+
+    def draw_world(self, special_cases={}):
+        """
+        Returns a generator that yields the individual chars that make up the
+        world.
+        """
+        # Order and direction of axis chosen for intuitive controls.
+        # Current setup mimics a grid of grids: the outer rows and columns are the
+        # z and w dimensions, the inner ones are y and x (respectively).
+        for z in reversed(range(self.size[2])):
+            for y in reversed(range(self.size[1])):
+                for w in reversed(range(self.size[3])):
+                    for x in range(self.size[0]):
+                        cell = (x, y, z, w)
+                        o = self.get_object_at(cell)
+                        if o:
+                            yield o.char
+                        elif cell in special_cases:
+                            yield special_cases[cell]
+                        else:
+                            yield '.'
+                    yield ' '
+                yield '\n'
+            yield '\n'
+
+
+class Game(object):
+    """
+    Interactive game class.
+    """
+    def __init__(self, player, world):
+        self.player = player
+        self.world = world
+
+    def read_and_process_input(self):
+        """
+        Reads one input command from the user and updates the world.
+        """
+        direction = direction_input()
+        movement = movement_by_direction[direction]
+        try:
+            # Force = 2. One to move the player, one to push an arbitrary item.
+            self.player.move(movement, force=2)
+        except MovementException:
+            return
+
+    def run(self):
+        """
+        Loops reading input from the user and moving the player character until
+        the player wins.
+        """
+        while True:
+            display(''.join(self.world.draw_world()))
+            self.read_and_process_input()
+
+class Level(Game):
     """
     Class for a single game level.
     """
@@ -143,72 +219,21 @@ class Level(object):
         item = objects_by_char['#']
         objects = [o for char, o in objects_by_char.items()]
         size = tuple(i + 1 for i in max_cell)
-        return Level(player, item, target, objects, size)
+        return Level(player, item, target, World(objects, size))
 
-    def __init__(self, player, item, target, objects, size):
-        self.player = player
+    def __init__(self, player, item, target, world):
+        Game.__init__(self, player, world)
         self.item = item
         self.target = target
-        self.objects = objects
-        self.size = size
-
-        for o in objects:
-            o.world = self
-
-    def get_object_at(self, position, ignore=set()):
-        """
-        Finds the object with a cell at `position`, unless it is in the `ignore`
-        set. Returns None if no matches are found.
-        """
-        for o in self.objects:
-            if o in ignore:
-                continue
-            if position in o.cells:
-                return o
-
-    def draw_world(self):
-        """
-        Returns a generator that yields the individual chars that make up the
-        world.
-        """
-        # Order and direction of axis chosen for intuitive controls.
-        # Current setup mimics a grid of grids: the outer rows and columns are the
-        # z and w dimensions, the inner ones are y and x (respectively).
-        for z in reversed(range(self.size[2])):
-            for y in reversed(range(self.size[1])):
-                for w in reversed(range(self.size[3])):
-                    for x in range(self.size[0]):
-                        cell = (x, y, z, w)
-                        o = self.get_object_at(cell)
-                        if o:
-                            yield o.char
-                        elif cell == self.target:
-                            yield 'X'
-                        else:
-                            yield '.'
-                    yield ' '
-                yield '\n'
-            yield '\n'
-
 
     def run(self):
-        """
-        Loops reading input from the user and moving the player character until
-        the player wins.
-        """
         while True:
-            display(''.join(self.draw_world()))
-
+            display(''.join(self.world.draw_world({self.target: 'X'})))
             if self.target in self.item.cells:
                 return
+            self.read_and_process_input()
 
-            direction = direction_input()
-            movement = movement_by_direction[direction]
-            try:
-                # Force = 2. One to move the player, one to push an arbitrary item.
-                self.player.move(movement, force=2)
-            except MovementException:
-                continue
+
 
 if __name__ == '__main__':
     for level_name in sorted(os.listdir('levels')):
