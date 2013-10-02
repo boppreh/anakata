@@ -259,8 +259,8 @@ class Level(Game):
             screen = self.name + '\n\n' + self.world.draw({self.target: 'X'})
             display(screen)
             if self.target in self.item.cells:
-                print('Level completed!')
-                print('Move to continue.')
+                screen += 'Level completed!\nMove to continue.'
+                display(screen)
                 direction_input()
                 raise LevelEnd()
             self.read_and_process_input()
