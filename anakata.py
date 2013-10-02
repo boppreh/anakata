@@ -213,11 +213,13 @@ class Level(Game):
     Class for a single game level.
     """
     @staticmethod
-    def load(level_text):
+    def load(level_file):
         """
         Creates a new level based on a textual map. Cells with the same symbol
         are merged into a single object and '@' denotes the player.
         """
+        level_text = open(level_file).read()
+        level_name = os.path.basename(os.path.splitext(level_file)[0])
         cells_by_char = defaultdict(list)
         max_cell = (0, 0, 0, 0)
         level_text = level_text.strip()
@@ -243,16 +245,18 @@ class Level(Game):
         item = objects_by_char['#']
         objects = [o for char, o in objects_by_char.items()]
         size = tuple(i + 1 for i in max_cell)
-        return Level(player, item, target, World(objects, size))
+        return Level(player, item, target, World(objects, size), level_name)
 
-    def __init__(self, player, item, target, world):
+    def __init__(self, player, item, target, world, name):
         Game.__init__(self, player, world)
         self.item = item
         self.target = target
+        self.name = name
 
     def run(self):
         while True:
-            display(self.world.draw({self.target: 'X'}))
+            screen = self.name + '\n\n' + self.world.draw({self.target: 'X'})
+            display(screen)
             if self.target in self.item.cells:
                 raise LevelEndError(True)
             self.read_and_process_input()
@@ -296,7 +300,7 @@ class LevelSelection(Game):
 
 
 if __name__ == '__main__':
-    levels = [Level.load(open('levels/' + level).read())
+    levels = [Level.load('levels/' + level)
               for level in os.listdir('levels')
               if not level.startswith('.')]
 
