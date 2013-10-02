@@ -26,9 +26,9 @@ except ImportError:
     # Without this the program works fine, but the terminal remains borked
     # after exit. If this happens to you, run `reset` to restore (just type and
     # press enter, even if you don't see the text).
-    atexit.register(lambda: curses.echo()
-            or curses.nocbreak() or
-            curses.endwin())
+    atexit.register(curses.endwin)
+    atexit.register(curses.nocbreak)
+    atexit.register(curses.echo)
 
     directions_by_key = {
         ord('w'): 'up', ord('s'): 'down',
