@@ -218,8 +218,13 @@ class Level(Game):
         level_text = open(level_file).read()
         level_name = os.path.basename(os.path.splitext(level_file)[0])
         cells_by_char = defaultdict(list)
-        max_cell = (0, 0, 0, 0)
         level_text = level_text.strip()
+
+        max_z = level_text.count('\n\n') + 1
+        max_w = level_text.split('\n')[0].count(' ') + 1
+        max_x = (len(level_text.split('\n')[0]) + 1) / max_w - 1
+        max_y = (level_text.count('\n') + 1) / max_z
+        size = (max_x, max_y, max_z, max_w)
 
         # Mimics the World.draw method, but splitting instead of joining.
         for z, z_contents in enumerate(reversed(level_text.split('\n\n'))):
@@ -227,10 +232,9 @@ class Level(Game):
                 for w, w_contents in enumerate(reversed(y_contents.split(' '))):
                     for x, x_contents in enumerate(w_contents):
                         cell = (x, y, z, w)
+                        assert cell < size
                         if x_contents != '.':
                             cells_by_char[x_contents].append(cell)
-                        if cell > max_cell:
-                            max_cell = cell
 
         target = cells_by_char['X'][0]
         del cells_by_char['X']
@@ -241,7 +245,6 @@ class Level(Game):
         player = objects_by_char['@']
         item = objects_by_char['#']
         objects = [o for char, o in objects_by_char.items()]
-        size = tuple(i + 1 for i in max_cell)
         return Level(player, item, target, World(objects, size), level_name)
 
     def __init__(self, player, item, target, world, name):
@@ -298,5 +301,4 @@ if __name__ == '__main__':
     levels = [Level.load('levels/' + level)
               for level in os.listdir('levels')
               if not level.startswith('.')]
-
     LevelSelection(levels).run()
