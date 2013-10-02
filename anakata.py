@@ -211,7 +211,16 @@ class Level(object):
 
 if __name__ == '__main__':
     for level_name in sorted(os.listdir('levels')):
-        print('Level: ' + os.path.splitext(level_name)[0])
+        # Ignore hidden files, such as Vim swap files.
+        if level_name.startswith('.'):
+            continue
+
+        print(os.path.splitext(level_name)[0].title())
+        print('')
+        print('You are @.')
+        print('Use arrows keys and WSAD to move.')
+        print('Push # into X.')
+        print('')
         print('Press any key to continue.')
         direction_input()
 
