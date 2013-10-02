@@ -77,10 +77,10 @@ class Object(object):
     Physical object represented by a set of cells, connected or not, and a
     single character string.
     """
-    def __init__(self, cells, char, is_immovable=False, world=None):
+    def __init__(self, cells, char, is_movable=True, world=None):
         self.cells = cells
         self.char = char
-        self.is_immovable = is_immovable
+        self.is_movable = is_movable
         self.world = world
 
     def move(self, movement, force=1):
@@ -92,7 +92,7 @@ class Object(object):
         Illegal movements (not enough force or cell out of bounds) raise an
         error and no change is made to any of the object's cells.
         """
-        if force == 0 or self.is_immovable:
+        if force == 0 or self.is_movable:
             raise MovementError()
 
         new_cells = []
@@ -134,7 +134,7 @@ class World(object):
             if position in o.cells:
                 return o
 
-    def draw_world(self, special_cases={}):
+    def draw(self, special_cases={}):
         """
         Returns a generator that yields the individual chars that make up the
         world.
@@ -199,7 +199,7 @@ class Game(object):
         the player wins.
         """
         while True:
-            display(''.join(self.world.draw_world()))
+            display(''.join(self.world.draw()))
             self.read_and_process_input()
 
 class Level(Game):
@@ -215,6 +215,8 @@ class Level(Game):
         cells_by_char = defaultdict(list)
         max_cell = (0, 0, 0, 0)
         level_text = level_text.strip()
+
+        # Mimics the World.draw method, but splitting instead of joining.
         for z, z_contents in enumerate(reversed(level_text.split('\n\n'))):
             for y, y_contents in enumerate(reversed(z_contents.split('\n'))):
                 for w, w_contents in enumerate(reversed(y_contents.split(' '))):
@@ -228,7 +230,7 @@ class Level(Game):
         target = cells_by_char['X'][0]
         del cells_by_char['X']
 
-        objects_by_char = {char: Object(cells, char, char == 'o', None)
+        objects_by_char = {char: Object(cells, char, char != 'o', None)
                            for char, cells in cells_by_char.items()}
 
         player = objects_by_char['@']
@@ -244,7 +246,7 @@ class Level(Game):
 
     def run(self):
         while True:
-            display(''.join(self.world.draw_world({self.target: 'X'})))
+            display(''.join(self.world.draw({self.target: 'X'})))
             if self.target in self.item.cells:
                 return
             self.read_and_process_input()
@@ -270,7 +272,7 @@ class LevelSelection(Game):
             level_by_cell[cell] = str(i + 1)
 
         while True:
-            display(''.join(self.world.draw_world(level_by_cell)))
+            display(''.join(self.world.draw(level_by_cell)))
             self.read_and_process_input()
 
             player_cell = self.player.cells[0]
