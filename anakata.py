@@ -75,7 +75,7 @@ class Object(object):
     Physical object represented by a set of cells, connected or not, and a
     single character string.
     """
-    def __init__(self, cells, char, is_immovable, world):
+    def __init__(self, cells, char, is_immovable=False, world=None):
         self.cells = cells
         self.char = char
         self.is_immovable = is_immovable
