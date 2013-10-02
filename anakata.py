@@ -75,9 +75,10 @@ class Object(object):
     Physical object represented by a set of cells, connected or not, and a
     single character string.
     """
-    def __init__(self, cells, char, world):
+    def __init__(self, cells, char, is_immovable, world):
         self.cells = cells
         self.char = char
+        self.is_immovable = is_immovable
         self.world = world
 
     def move(self, movement, force=1):
@@ -89,7 +90,7 @@ class Object(object):
         Illegal movements (not enough force or cell out of bounds) raise an
         exception and no change is made to any of the object's cells.
         """
-        if force == 0:
+        if force == 0 or self.is_immovable:
             raise MovementException()
 
         new_cells = []
@@ -135,7 +136,7 @@ class Level(object):
         target = cells_by_char['X'][0]
         del cells_by_char['X']
 
-        objects_by_char = {char: Object(cells, char, None)
+        objects_by_char = {char: Object(cells, char, char == 'o', None)
                            for char, cells in cells_by_char.items()}
 
         player = objects_by_char['@']
