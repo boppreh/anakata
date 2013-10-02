@@ -267,18 +267,16 @@ class LevelSelection(Game):
     Selection screen displayed as in-game level.
     """
     def __init__(self, levels):
-        player = Object([(0, 4, 1, 0)], '@')
+        player = Object([(5, len(levels) - 1, 0, 0)], '@')
         objects = [player]
         self.levels = levels
 
-        Game.__init__(self, player, World(objects, (5, 5, 2, 1)))
+        Game.__init__(self, player, World(objects, (10, len(levels), 1, 1)))
 
     def run(self):
         level_by_cell = {}
         for i, level in enumerate(levels):
-            x = int(i % 5)
-            y = 4 - int(i / 5)
-            cell = (x, y, 0, 0)
+            cell = (9, len(levels) - i - 1, 0, 0)
             level_by_cell[cell] = str(i + 1)
 
         while True:
