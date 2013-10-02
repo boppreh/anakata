@@ -92,7 +92,7 @@ class Object(object):
         Illegal movements (not enough force or cell out of bounds) raise an
         error and no change is made to any of the object's cells.
         """
-        if force == 0 or self.is_movable:
+        if force == 0 or not self.is_movable:
             raise MovementError()
 
         new_cells = []
@@ -136,8 +136,8 @@ class World(object):
 
     def draw(self, special_cases={}):
         """
-        Returns a generator that yields the individual chars that make up the
-        world.
+        Returns a textual representation of the world and all its objects,
+        placing the special case symbols over empty spaces.
         """
         # Order and direction of axis chosen for intuitive controls.
         # Current setup mimics a grid of grids: the outer rows and columns are the
@@ -156,6 +156,7 @@ class World(object):
         # ... ... ...
         # ... ... ...
         # ----------+ w
+        output = []
         for z in reversed(range(self.size[2])):
             for y in reversed(range(self.size[1])):
                 for w in reversed(range(self.size[3])):
@@ -163,14 +164,16 @@ class World(object):
                         cell = (x, y, z, w)
                         o = self.get_object_at(cell)
                         if o:
-                            yield o.char
+                            output.append(o.char)
                         elif cell in special_cases:
-                            yield special_cases[cell]
+                            output.append(special_cases[cell])
                         else:
-                            yield '.'
-                    yield ' '
-                yield '\n'
-            yield '\n'
+                            output.append('.')
+                    output.append(' ')
+                output.append('\n')
+            output.append('\n')
+
+        return ''.join(output)
 
 
 class Game(object):
@@ -199,7 +202,7 @@ class Game(object):
         the player wins.
         """
         while True:
-            display(''.join(self.world.draw()))
+            display(self.world.draw())
             self.read_and_process_input()
 
 class Level(Game):
@@ -246,7 +249,7 @@ class Level(Game):
 
     def run(self):
         while True:
-            display(''.join(self.world.draw({self.target: 'X'})))
+            display(self.world.draw({self.target: 'X'}))
             if self.target in self.item.cells:
                 return
             self.read_and_process_input()
@@ -272,7 +275,7 @@ class LevelSelection(Game):
             level_by_cell[cell] = str(i + 1)
 
         while True:
-            display(''.join(self.world.draw(level_by_cell)))
+            display(self.world.draw(level_by_cell))
             self.read_and_process_input()
 
             player_cell = self.player.cells[0]
