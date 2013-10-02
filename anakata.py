@@ -56,7 +56,6 @@ def direction_input():
         except KeyError:
             continue
 
-world_size = (5, 5, 5, 5)
 movement_by_direction = {
     'up': (0, 0, 1, 0),
     'down': (0, 0, -1, 0),
@@ -96,7 +95,7 @@ class Object(object):
         for cell in self.cells:
             new_cell = tuple(i + j for i, j in zip(cell, movement))
 
-            for i, max_i in zip(new_cell, world_size):
+            for i, max_i in zip(new_cell, self.world.size):
                 if i < 0 or i >= max_i:
                     raise MovementException()
 
@@ -114,7 +113,8 @@ class Level(object):
     Class for a single game level.
     """
     def __init__(self):
-        self.player = Object([tuple(int(i / 2) for i in world_size)], '@', self)
+        self.size = (5, 5, 5, 5)
+        self.player = Object([tuple(int(i / 2) for i in self.size)], '@', self)
         point = Object([(2, 3, 2, 2)], '#', self)
         self.objects = [self.player, point]
 
@@ -137,10 +137,10 @@ class Level(object):
         # Order and direction of axis chosen for intuitive controls.
         # Current setup mimics a grid of grids: the outer rows and columns are the
         # z and w dimensions, the inner ones are y and x (respectively).
-        for z in reversed(range(world_size[2])):
-            for y in reversed(range(world_size[1])):
-                for w in reversed(range(world_size[3])):
-                    for x in range(world_size[0]):
+        for z in reversed(range(self.size[2])):
+            for y in reversed(range(self.size[1])):
+                for w in reversed(range(self.size[3])):
+                    for x in range(self.size[0]):
                         o = self.get_object_at((x, y, z, w))
                         if o:
                             yield o.char
