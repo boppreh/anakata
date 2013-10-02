@@ -69,6 +69,7 @@ movement_by_direction = {
 }
 
 class MovementException(Exception): pass
+class LevelEndException(Exception): pass
 
 class Object(object):
     """
@@ -234,30 +235,39 @@ class Level(Game):
             self.read_and_process_input()
 
 
+class LevelSelection(Game):
+    """
+    Selection screen displayed as in-game level.
+    """
+    def __init__(self, levels):
+        player = Object([(0, 4, 1, 0)], '@')
+        objects = [player]
+        self.levels = levels
+
+        Game.__init__(self, player, World(objects, (5, 5, 2, 1)))
+
+    def run(self):
+        level_by_cell = {}
+        for i, level in enumerate(levels):
+            x = int(i % 5)
+            y = 4 - int(i / 5)
+            cell = (x, y, 0, 0)
+            level_by_cell[cell] = str(i + 1)
+
+        while True:
+            display(''.join(self.world.draw_world(level_by_cell)))
+            self.read_and_process_input()
+
+            player_cell = self.player.cells[0]
+            if player_cell in level_by_cell:
+                level_number = level_by_cell[self.player.cells[0]]
+                level = self.levels[int(level_number) - 1]
+                level.run()
+
 
 if __name__ == '__main__':
-    for level_name in sorted(os.listdir('levels')):
-        # Ignore hidden files, such as Vim swap files.
-        if level_name.startswith('.'):
-            continue
+    levels = [Level.load(open('levels/' + level).read())
+              for level in os.listdir('levels')
+              if not level.startswith('.')]
 
-        print(os.path.splitext(level_name)[0].title())
-        print('')
-        print('You are @.')
-        print('Use arrows keys and WSAD to move.')
-        print('Push # into X.')
-        print('')
-        print('Press any key to continue.')
-        direction_input()
-
-        text = open('levels/' + level_name).read()
-        Level.load(text).run()
-        print('Level finished!')
-        print('')
-        print('')
-
-    print('===================')
-    print('  Game completed')
-    print('')
-    print(' You are a winner!')
-    print('===================')
+    LevelSelection(levels).run()
