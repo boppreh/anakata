@@ -1,9 +1,12 @@
 import os
 from collections import defaultdict
-from console import display, get_key, get_option
+from console import display, get_key, get_option, hotkeys
 
 class MovementError(Exception): pass
 class LevelEnd(Exception): pass
+
+def exit_level(): raise LevelEnd()
+hotkeys['q'] = exit_level
 
 movement_by_key = {
     'w': (0, 0, 1, 0),
