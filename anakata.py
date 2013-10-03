@@ -1,6 +1,6 @@
 import os
 from collections import defaultdict
-from console import display, get_key
+from console import display, get_key, get_option
 
 class MovementError(Exception): pass
 class LevelEnd(Exception): pass
@@ -15,18 +15,6 @@ movement_by_key = {
     'right': (1, 0, 0, 0),
     'left': (-1, 0, 0, 0),
 }
-
-def movement_input():
-    """
-    Returns a direction word (e.g. "up", "left", "ana") from user input. Blocks
-    until a valid direction is entered.
-    """
-    while True:
-        char = get_key()
-        if char == 'q':
-            raise LevelEnd()
-        elif char in movement_by_key:
-            return movement_by_key[char]
 
 class Object(object):
     """
@@ -144,10 +132,9 @@ class Game(object):
         """
         Reads one input command from the user and updates the world.
         """
-        movement = movement_input()
         try:
             # Force = 2. One to move the player, one to push an arbitrary item.
-            self.player.move(movement, force=2)
+            self.player.move(get_option(movement_by_key), force=2)
         except MovementError:
             return
 
@@ -213,9 +200,9 @@ class Level(Game):
             screen = self.name + '\n\n' + self.world.draw({self.target: 'X'})
             display(screen)
             if self.target in self.item.cells:
-                screen += 'Level completed!\nMove to continue.'
+                screen += 'Level completed!'
                 display(screen)
-                movement_input()
+                get_key()
                 raise LevelEnd()
             self.read_and_process_input()
 
