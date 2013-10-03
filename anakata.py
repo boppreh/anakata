@@ -293,13 +293,13 @@ class LevelSelection(Game):
                 level_number = level_by_cell[self.player.cells[0]]
                 level = self.levels[int(level_number) - 1]
                 try:
-                    level.run()
+                    Level.load(level).run()
                 except LevelEnd:
                     continue
 
 
 if __name__ == '__main__':
-    levels = [Level.load('levels/' + level)
+    levels = ['levels/' + level
               for level in sorted(os.listdir('levels'))
               if not level.startswith('.')]
     LevelSelection(levels).run()
