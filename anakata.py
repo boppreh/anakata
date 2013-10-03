@@ -1,77 +1,32 @@
-import sys, os
+import os
 from collections import defaultdict
-try:
-    from msvcrt import getch
-    directions_by_key = {
-        'w': 'up', 's': 'down',
-        'a': 'ana', 'd': 'kata',
-        'H': 'forward', 'P': 'backward',
-        'M': 'right', 'K': 'left',
-    }
-
-    # If the user presses an arrow key, `getch` interprets it as a three-byte
-    # message. The first two bytes are the same for all directions, and the
-    # last one is a seemingly random uppercase letter. We are counting on
-    # `direction_input` to ignore the first two bytes.
-    def display(text):
-        os.system('cls')
-        sys.stdout.write(text)
-
-except ImportError:
-    import curses, atexit
-    window = curses.initscr()
-    window.keypad(True)
-    curses.noecho()
-    curses.cbreak()
-
-    # Without this the program works fine, but the terminal remains borked
-    # after exit. If this happens to you, run `reset` to restore (just type and
-    # press enter, even if you don't see the text).
-    atexit.register(curses.endwin)
-    atexit.register(curses.nocbreak)
-    atexit.register(curses.echo)
-
-    directions_by_key = {
-        ord('w'): 'up', ord('s'): 'down',
-        ord('a'): 'ana', ord('d'): 'kata',
-        259: 'forward', 258: 'backward',
-        261: 'right', 260: 'left',
-    }
-    # Note: window.getch() returns int, not str. Shouldn't be a problem because
-    # `directions_by_key` is indexed by int too.
-    getch = window.getch
-
-    def display(text):
-        window.addstr(0, 0, text)
-        window.clrtobot()
-        window.refresh()
-
+from console import display, get_key
 
 class MovementError(Exception): pass
 class LevelEnd(Exception): pass
 
-def direction_input():
+movement_by_key = {
+    'w': (0, 0, 1, 0),
+    's': (0, 0, -1, 0),
+    'a': (0, 0, 0, 1),
+    'd': (0, 0, 0, -1),
+    'up': (0, 1, 0, 0),
+    'down': (0, -1, 0, 0),
+    'right': (1, 0, 0, 0),
+    'left': (-1, 0, 0, 0),
+}
+
+def movement_input():
     """
     Returns a direction word (e.g. "up", "left", "ana") from user input. Blocks
     until a valid direction is entered.
     """
     while True:
-        char = getch()
-        if char in ('q', 113):
+        char = get_key()
+        if char == 'q':
             raise LevelEnd()
-        elif char in directions_by_key:
-            return directions_by_key[char]
-
-movement_by_direction = {
-    'up': (0, 0, 1, 0),
-    'down': (0, 0, -1, 0),
-    'ana': (0, 0, 0, 1),
-    'kata': (0, 0, 0, -1),
-    'forward': (0, 1, 0, 0),
-    'backward': (0, -1, 0, 0),
-    'right': (1, 0, 0, 0),
-    'left': (-1, 0, 0, 0),
-}
+        elif char in movement_by_key:
+            return movement_by_key[char]
 
 class Object(object):
     """
@@ -189,8 +144,7 @@ class Game(object):
         """
         Reads one input command from the user and updates the world.
         """
-        direction = direction_input()
-        movement = movement_by_direction[direction]
+        movement = movement_input()
         try:
             # Force = 2. One to move the player, one to push an arbitrary item.
             self.player.move(movement, force=2)
@@ -261,7 +215,7 @@ class Level(Game):
             if self.target in self.item.cells:
                 screen += 'Level completed!\nMove to continue.'
                 display(screen)
-                direction_input()
+                movement_input()
                 raise LevelEnd()
             self.read_and_process_input()
 
