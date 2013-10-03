@@ -174,7 +174,7 @@ class Level(Game):
                 for w, w_contents in enumerate(reversed(y_contents.split(' '))):
                     for x, x_contents in enumerate(w_contents):
                         cell = (x, y, z, w)
-                        assert cell < size
+                        assert (i < j for i, j in zip(cell, size))
                         if x_contents != '.':
                             cells_by_char[x_contents].append(cell)
 
