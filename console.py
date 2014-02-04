@@ -46,6 +46,15 @@ except ImportError:
             return chr(keycode)
 
     def _display(text):
+        lines = text.split('\n')
+        width = max(len(line) for line in lines)
+        height = len(lines)
+        if (height, width) > window.getmaxyx():
+            print('Text too large to be displayed, please resize terminal to at least {}x{}.'.format(width, height))
+            print('Press any key to continue...')
+            get_key()
+            raise ValueError('Text too large to be displayed.')
+
         window.addstr(0, 0, text)
         window.clrtobot()
         window.refresh()

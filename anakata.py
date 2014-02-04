@@ -200,8 +200,7 @@ class Level(Game):
 
     def run(self):
         while True:
-            screen = self.name + '\n\n' + self.world.draw({self.target: 'X'})
-            display(screen)
+            display(self.name + '\n\n' + self.world.draw({self.target: 'X'}))
             if self.target in self.item.cells:
                 screen += 'Level completed!'
                 display(screen)
@@ -228,8 +227,7 @@ class LevelSelection(Game):
             level_by_cell[cell] = str(i + 1)
 
         while True:
-            text = 'Select level\n\n' + self.world.draw(level_by_cell)
-            display(text)
+            display('Select level\n\n' + self.world.draw(level_by_cell))
             self.read_and_process_input()
 
             player_cell = self.player.cells[0]
@@ -246,4 +244,5 @@ if __name__ == '__main__':
     levels = ['levels/' + level
               for level in sorted(os.listdir('levels'))
               if not level.startswith('.')]
+
     LevelSelection(levels).run()
